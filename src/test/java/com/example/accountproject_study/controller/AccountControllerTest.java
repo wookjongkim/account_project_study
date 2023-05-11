@@ -2,6 +2,7 @@ package com.example.accountproject_study.controller;
 
 import com.example.accountproject_study.dto.AccountDto;
 import com.example.accountproject_study.dto.CreateAccount;
+import com.example.accountproject_study.dto.DeleteAccount;
 import com.example.accountproject_study.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,9 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -73,6 +76,31 @@ class AccountControllerTest {
                 ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.accountNumber").value("1234567890"))
+                .andDo(print());
+    }
+
+    @Test
+    void successDeleteAccount() throws Exception{
+        given(accountService.deleteAccount(anyLong(), anyString()))
+                .willReturn(AccountDto.builder()
+                        .userId(12L)
+                        .accountNumber("1234567890")
+                        .unRegisteredAt(LocalDateTime.now())
+                        .build()
+                );
+
+        //then
+        mockMvc.perform(delete("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                        objectMapper.writeValueAsString(
+                                new DeleteAccount.Request(
+                                        100L,"1111111111"
+                                )
+                        )
+                ))
+                .andExpect(jsonPath("$.userId").value(12L))
                 .andExpect(jsonPath("$.accountNumber").value("1234567890"))
                 .andDo(print());
     }
