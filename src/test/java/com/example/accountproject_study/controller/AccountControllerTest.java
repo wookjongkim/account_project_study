@@ -13,20 +13,19 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * @WebMvcTest
- * JPA 기능은 동작하지 않음
+ * @WebMvcTest JPA 기능은 동작하지 않음
  * 여러 스프링 테스트 어노테이션 중, Web(Spring MVC)에만 집중할 수 있는 어노테이션
  * @Controller, @ControllerAdvice 사용 가능
  * 단, @Service @Repository등은 사용 불가
@@ -40,7 +39,7 @@ class AccountControllerTest {
      * 스프링 MVC 테스트의 시작점
      * HTTP GET, POST 등에 대해 API 테스트 가능
      */
-    MockMvc mockMvc;
+            MockMvc mockMvc;
 
     @MockBean
     private AccountService accountService;
@@ -53,7 +52,7 @@ class AccountControllerTest {
      * Service의 createAccount 메서드에 대한 단위 테스트
      * given을 통해 메서드의 동작을 가정하고 then을 통해 실제 결과가 예상과 일치하는지 확인
      */
-    void successCreateAccount() throws Exception{
+    void successCreateAccount() throws Exception {
         //given ( Mockito에서 제공하는 메서드)
         // anyLong() : 메서드 호출 시 어떤 Long값이든 매개변수로 전달 될수 있음을 의미
         // -> 이를 통해 구체적인 값을 지정하지 않아도 테스트 대상 메소드가 호출되는 것을 가정
@@ -68,12 +67,12 @@ class AccountControllerTest {
 
         //then
         mockMvc.perform(post("/account")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                        objectMapper.writeValueAsString(
-                                new CreateAccount.Request(333L, 10000L)
-                        )
-                ))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                objectMapper.writeValueAsString(
+                                        new CreateAccount.Request(333L, 10000L)
+                                )
+                        ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(1))
                 .andExpect(jsonPath("$.accountNumber").value("1234567890"))
@@ -81,7 +80,7 @@ class AccountControllerTest {
     }
 
     @Test
-    void successDeleteAccount() throws Exception{
+    void successDeleteAccount() throws Exception {
         given(accountService.deleteAccount(anyLong(), anyString()))
                 .willReturn(AccountDto.builder()
                         .userId(12L)
@@ -92,16 +91,38 @@ class AccountControllerTest {
 
         //then
         mockMvc.perform(delete("/account")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                        objectMapper.writeValueAsString(
-                                new DeleteAccount.Request(
-                                        100L,"1111111111"
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                objectMapper.writeValueAsString(
+                                        new DeleteAccount.Request(
+                                                100L, "1111111111"
+                                        )
                                 )
-                        )
-                ))
+                        ))
                 .andExpect(jsonPath("$.userId").value(12L))
                 .andExpect(jsonPath("$.accountNumber").value("1234567890"))
                 .andDo(print());
+    }
+
+    @Test
+    void successGetAccountsByUserId() throws Exception {
+        List<AccountDto> accountDtos =
+                Arrays.asList(
+                        AccountDto.builder()
+                                .accountNumber("1234567890")
+                                .balance(1000L).build(),
+                        AccountDto.builder()
+                                .accountNumber("1234567222")
+                                .balance(2000L).build()
+                        );
+        given(accountService.getAccountsByUserId(anyLong()))
+                .willReturn(accountDtos);
+
+        mockMvc.perform(get("/account?user_id=1"))
+                .andDo(print())
+                .andExpect(jsonPath("$[0].accountNumber").value("1234567890"))
+                .andExpect(jsonPath("$[0].balance").value(1000L))
+                .andExpect(jsonPath("$[1].accountNumber").value("1234567222"))
+                .andExpect(jsonPath("$[1].balance").value(2000L));
     }
 }
