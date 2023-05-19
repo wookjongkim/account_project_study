@@ -3,8 +3,8 @@ POST http://localhost:8080/account
 Content-type: application/json
 
 {
-  "userId" : 222,
-  "initialBalance" : 1234500
+  "userId" : 1,
+  "initialBalance" : 10000
 }
 
 ### deleteAccount
