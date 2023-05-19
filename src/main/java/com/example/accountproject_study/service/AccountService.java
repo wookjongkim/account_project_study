@@ -36,8 +36,7 @@ public class AccountService {
     // 즉, 메서드 내의 모든 데이터베이스 작업이 정상적으로 완료되거나, 문제가 발생할 경우 모든 작업이
     // 롤백되어 이전 상태로 되돌림
     public AccountDto createAccount(Long userId, Long initialBalance) {
-        AccountUser accountUser = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+        AccountUser accountUser = getAccountUser(userId);
 
         validateAccountUpTen(accountUser);
 
@@ -62,9 +61,7 @@ public class AccountService {
     }
 
     public AccountDto deleteAccount(Long userId, String accountNumber) {
-        AccountUser accountUser = accountUserRepository.findById(userId)
-                .orElseThrow(() ->
-                        new AccountException(USER_NOT_FOUND));
+        AccountUser accountUser = getAccountUser(userId);
 
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
@@ -76,6 +73,12 @@ public class AccountService {
         accountRepository.save(account);
 
         return AccountDto.fromEntity(account);
+    }
+
+    private AccountUser getAccountUser(Long userId) {
+        AccountUser accountUser = accountUserRepository.findById(userId)
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+        return accountUser;
     }
 
     private void validateAccount(AccountUser accountUser, Account account) {
@@ -93,8 +96,7 @@ public class AccountService {
     }
 
     public List<AccountDto> getAccountsByUserId(Long userId) {
-        AccountUser accountUser = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+        AccountUser accountUser = getAccountUser(userId);
 
         List<Account> accounts = accountRepository
                 .findByAccountUser(accountUser);

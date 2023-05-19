@@ -16,12 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-public class Transaction {
-
-    @Id
-    @GeneratedValue
-    private Long id; // 거래 횟수 노출 보안상 좋지 않
+public class Transaction extends BaseEntity{
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
@@ -38,9 +33,4 @@ public class Transaction {
 
     private LocalDateTime transactedAt;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 }
