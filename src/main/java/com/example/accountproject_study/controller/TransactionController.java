@@ -1,15 +1,14 @@
 package com.example.accountproject_study.controller;
 
 import com.example.accountproject_study.dto.CancelBalance;
+import com.example.accountproject_study.dto.QueryTransactionResponse;
 import com.example.accountproject_study.dto.TransactionDto;
 import com.example.accountproject_study.dto.UseBalance;
 import com.example.accountproject_study.exception.AccountException;
 import com.example.accountproject_study.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -60,5 +59,14 @@ public class TransactionController {
 
             throw e;
         }
+    }
+
+    @GetMapping("/transaction/{transactionId}")
+    public QueryTransactionResponse queryTransaction(
+            @PathVariable String transactionId
+    ){
+        return QueryTransactionResponse.from(
+                transactionService.queryTransaction(transactionId)
+        );
     }
 }
